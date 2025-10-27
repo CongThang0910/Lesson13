@@ -8,7 +8,7 @@ TaskHandle_t handleBlink = NULL;
 TaskHandle_t handleAlert = NULL;
 SemaphoreHandle_t semButton = NULL;
 
-/* ================= Nguyên mau hàm ================= */
+/* ================= Nguyên m?u hàm ================= */
 void Task_Blink(void *pvParameters);
 void Task_Alert(void *pvParameters);
 void GPIO_Config(void);
@@ -46,20 +46,20 @@ void GPIO_Config(void)
     gpio.GPIO_Mode = GPIO_Mode_Out_PP;
     gpio.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_Init(GPIOC, &gpio);
-    GPIO_SetBits(GPIOC, GPIO_Pin_13); // Tat LED (active low)
+    GPIO_SetBits(GPIOC, GPIO_Pin_13); // T?t LED (active low)
 
-    // LED canh báo (PB12)
+    // LED c?nh báo (PB12)
     gpio.GPIO_Pin = GPIO_Pin_12;
     GPIO_Init(GPIOB, &gpio);
-    GPIO_SetBits(GPIOB, GPIO_Pin_12); // Tat LED canh báo (active low)
+    GPIO_SetBits(GPIOB, GPIO_Pin_12); // T?t LED c?nh báo (active low)
 
-    // Nút nhan (PA0 - kéo lên trong, nhin = 0)
+    // Nút nh?n (PA0 - kéo lên trong, nh?n = 0)
     gpio.GPIO_Pin = GPIO_Pin_0;
     gpio.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_Init(GPIOA, &gpio);
 }
 
-/* ================= Cau hình EXTI0 ================= */
+/* ================= C?u hình EXTI0 ================= */
 void EXTI_Config(void)
 {
     EXTI_InitTypeDef exti;
@@ -70,7 +70,7 @@ void EXTI_Config(void)
 
     exti.EXTI_Line = EXTI_Line0;
     exti.EXTI_Mode = EXTI_Mode_Interrupt;
-    exti.EXTI_Trigger = EXTI_Trigger_Falling; // Nút nhan xuong = ngat
+    exti.EXTI_Trigger = EXTI_Trigger_Falling; // Nút nh?n xu?ng = ng?t
     exti.EXTI_LineCmd = ENABLE;
     EXTI_Init(&exti);
 
@@ -83,7 +83,7 @@ void EXTI_Config(void)
     NVIC_Init(&nvic);
 }
 
-/* ================= Task LED nhap nháy ================= */
+
 void Task_Blink(void *pvParameters)
 {
     while (1)
@@ -93,32 +93,31 @@ void Task_Blink(void *pvParameters)
     }
 }
 
-/* ================= Task LED canh báo ================= */
 void Task_Alert(void *pvParameters)
 {
     for (;;)
     {
+       
         if (xSemaphoreTake(semButton, portMAX_DELAY) == pdTRUE)
         {
-            GPIO_ResetBits(GPIOB, GPIO_Pin_12); // Bat LED canh báo
-            vTasGPIO_SetBits(GPIOB, GPIO_Pin_12);   // Tat LED canh báo
+            GPIO_ResetBits(GPIOB, GPIO_Pin_12); 
+            vTaskDelay(pdMS_TO_TICKS(1000));
+					GPIO_SetBits(GPIOB, GPIO_Pin_12);   
         }
     }
 }
 
-/* ================= ISR: Ngat ngoài PA0 ================= */
+
 void EXTI0_IRQHandler(void)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     if (EXTI_GetITStatus(EXTI_Line0) != RESET)
-    {
-        EXTI_ClearITPendingBit(EXTI_Line0);
+    {EXTI_ClearITPendingBit(EXTI_Line0);
 
         if (semButton != NULL)
             xSemaphoreGiveFromISR(semButton, &xHigherPriorityTaskWoken);
     }
 
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-}kDelay(pdMS_TO_TICKS(1000));
-            
+}
